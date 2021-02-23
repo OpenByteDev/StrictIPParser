@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+    <Nullable>Enable</Nullable>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Authors>OpenByte</Authors>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/OpenByteDev/StrictIPParser</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/OpenByteDev/StrictIPParser</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>parser;ip;network;strict</PackageTags>
+    <Description>A strict alternative to the builtin IP parsing methods.</Description>
+  </PropertyGroup>
+</Project>
