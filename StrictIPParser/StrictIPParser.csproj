@@ -18,11 +18,11 @@
     <Authors>OpenByte</Authors>
     <NeutralLanguage>en</NeutralLanguage>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/OpenByteDev/StrictIPParser</PackageProjectUrl>
     <RepositoryUrl>https://github.com/OpenByteDev/StrictIPParser</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>parser;ip;network;strict</PackageTags>
     <Description>A strict alternative to the builtin IP parsing methods.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>
