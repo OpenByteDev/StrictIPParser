@@ -19,10 +19,13 @@ namespace StrictIPParser.Test {
             ParseShouldSucceed("::1:2:3:4:5");
 
             static void ParseShouldSucceed(string text) {
-                Assert.IsTrue(IPv6Address.TryParse(text, out IPv6Address address));
+                Assert.IsTrue(IPv6Address.TryParse(text, out IPv6Address actual));
+                IPAddress expected = IPAddress.Parse(text);
+                Assert.AreEqual(expected, actual);
+                Assert.AreEqual(expected.ToString(), actual.ToString());
                 Assert.AreEqual(
-                    string.Join(",", IPAddress.Parse(text).GetAddressBytes()),
-                    string.Join(",", address.GetAddressBytes()));
+                     string.Join(",", expected.GetAddressBytes()),
+                     string.Join(",", actual.GetAddressBytes()));
             }
         }
 

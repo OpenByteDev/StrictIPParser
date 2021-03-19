@@ -5,25 +5,29 @@ using System.Net.Sockets;
 
 namespace StrictIPParser {
     public readonly struct IPv4Address : IEquatable<IPv4Address>, IEquatable<IPAddress> {
-        private readonly int value;
+        public readonly uint Value { get; }
 
-        public const int ByteCount = 4;
+        public const int ByteCount = sizeof(uint);
+        public const int MinAddressChars = 4 * 1 + 3;
         public const int MaxAddressChars = 4 * 3 + 3;
 
-        public static readonly IPv4Address None = (IPv4Address)IPAddress.None;
-        public static readonly IPv4Address Any = (IPv4Address)IPAddress.Any;
-        public static readonly IPv4Address Loopback = (IPv4Address)IPAddress.Loopback;
-        public static readonly IPv4Address Broadcast = (IPv4Address)IPAddress.Broadcast;
+        public static readonly IPv4Address None = new(IPAddress.None);
+        public static readonly IPv4Address Any = new(IPAddress.Any);
+        public static readonly IPv4Address Loopback = new(IPAddress.Loopback);
+        public static readonly IPv4Address Broadcast = new(IPAddress.Broadcast);
 
-        public IPv4Address(int value) {
-            this.value = value;
+        public IPv4Address(long value) {
+            Value = (uint)value;
+        }
+        public IPv4Address(uint value) {
+            Value = value;
         }
         public IPv4Address(ReadOnlySpan<byte> bytes) {
             if (bytes.Length < ByteCount) {
                 throw new ArgumentException("The provided span has invalid length", nameof(bytes));
             }
 
-            value = BinaryPrimitives.ReadInt32BigEndian(bytes);
+            Value = BinaryPrimitives.ReadUInt32LittleEndian(bytes);
         }
         public IPv4Address(IPAddress address) {
             if (address.AddressFamily != AddressFamily.InterNetwork) {
@@ -32,7 +36,7 @@ namespace StrictIPParser {
 
 #pragma warning disable CS0618 // Type or member is obsolete
             // we use .Address because it is faster and we check the address family beforehand.
-            value = (int)address.Address;
+            Value = (uint)address.Address;
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
@@ -47,7 +51,7 @@ namespace StrictIPParser {
                 throw new ArgumentException("Destination span is too short", nameof(destination));
             }
 
-            BinaryPrimitives.WriteInt32BigEndian(destination, value);
+            BinaryPrimitives.WriteUInt32LittleEndian(destination, Value);
         }
 
         public static IPv4Address Parse(ReadOnlySpan<char> text) {
@@ -59,7 +63,7 @@ namespace StrictIPParser {
         }
 
         public static bool TryParse(ReadOnlySpan<char> text, out IPv4Address address) {
-            Span<byte> bytes = stackalloc byte[4];
+            Span<byte> bytes = stackalloc byte[ByteCount];
             if (TryParseInto(text, bytes)) {
                 address = new IPv4Address(bytes);
                 return true;
@@ -70,7 +74,7 @@ namespace StrictIPParser {
         }
 
         public static bool TryParseInto(ReadOnlySpan<char> text, Span<byte> span) {
-            if (text.Length > 15 || span.Length < 4) {
+            if (text.Length < MinAddressChars || text.Length > MaxAddressChars || span.Length < ByteCount) {
                 return false;
             }
 
@@ -127,7 +131,7 @@ namespace StrictIPParser {
         }
 
         public bool Equals(IPv4Address other) {
-            return value == other.value;
+            return Value == other.Value;
         }
 
         public bool Equals(IPAddress? other) {
@@ -138,28 +142,32 @@ namespace StrictIPParser {
             if (other.AddressFamily != AddressFamily.InterNetwork) {
                 return false;
             }
+
 #pragma warning disable CS0618 // Type or member is obsolete
-            return value == other.Address;
+            return Value == other.Address;
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override int GetHashCode() {
-            return value;
+            return (int)Value;
         }
 
-        public override string ToString() {
-            Span<char> addressString = stackalloc char[MaxAddressChars];
-            int offset = 0;
+        public bool TryFormat(Span<char> destination, out int charsWritten) {
+            charsWritten = 0;
 
-            FormatBlock(value & 0xFF, addressString, ref offset);
-            AddDot(addressString, ref offset);
-            FormatBlock((value >> 8) & 0xFF, addressString, ref offset);
-            AddDot(addressString, ref offset);
-            FormatBlock((value >> 16) & 0xFF, addressString, ref offset);
-            AddDot(addressString, ref offset);
-            FormatBlock((value >> 24) & 0xFF, addressString, ref offset);
+            if (destination.Length < MaxAddressChars)
+                return false; // this is a little lazy, but the BCL does it too.
 
-            return new string(addressString);
+            int value = (int)Value;
+            FormatBlock(value & 0xFF, destination, ref charsWritten);
+            AddDot(destination, ref charsWritten);
+            FormatBlock((value >> 8) & 0xFF, destination, ref charsWritten);
+            AddDot(destination, ref charsWritten);
+            FormatBlock((value >> 16) & 0xFF, destination, ref charsWritten);
+            AddDot(destination, ref charsWritten);
+            FormatBlock((value >> 24) & 0xFF, destination, ref charsWritten);
+
+            return true;
 
             static void FormatBlock(int block, Span<char> addressString, ref int offset) {
                 offset += block >= 100 ? 3 : block >= 10 ? 2 : 1;
@@ -177,6 +185,12 @@ namespace StrictIPParser {
             }
         }
 
+        public override string ToString() {
+            Span<char> addressString = stackalloc char[MaxAddressChars];
+            TryFormat(addressString, out int charsWritten);
+            return addressString[..charsWritten].ToString();
+        }
+
         public static bool operator ==(IPv4Address left, IPv4Address right) {
             return left.Equals(right);
         }
@@ -185,8 +199,16 @@ namespace StrictIPParser {
             return !(left == right);
         }
 
+        public static bool operator ==(IPv4Address left, IPAddress right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(IPv4Address left, IPAddress right) {
+            return !(left == right);
+        }
+
         public static implicit operator IPAddress(IPv4Address address) {
-            return new(address.value);
+            return new(address.Value);
         }
 
         public static explicit operator IPv4Address(IPAddress address) {

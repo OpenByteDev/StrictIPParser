@@ -10,12 +10,13 @@ namespace StrictIPParser {
         private readonly long upper;
         private readonly long lower;
 
-        public const int ByteCount = 128 / 8;
+        public const int ByteCount = sizeof(long) * 2;
+        public const int MinAddressChars = 2;
         public const int MaxAddressChars = 8 * 4 + 7;
 
-        public static readonly IPv6Address None = (IPv6Address)IPAddress.IPv6None;
-        public static readonly IPv6Address Any = (IPv6Address)IPAddress.IPv6Any;
-        public static readonly IPv6Address Loopback = (IPv6Address)IPAddress.IPv6Loopback;
+        public static readonly IPv6Address None = new(IPAddress.IPv6None);
+        public static readonly IPv6Address Any = new(IPAddress.IPv6Any);
+        public static readonly IPv6Address Loopback = new(IPAddress.IPv6Loopback);
 
         public IPv6Address(long upper, long lower) {
             this.upper = upper;
@@ -26,8 +27,8 @@ namespace StrictIPParser {
                 throw new ArgumentException("The provided span has invalid length", nameof(bytes));
             }
 
-            upper = BinaryPrimitives.ReadInt64BigEndian(bytes[..8]);
-            lower = BinaryPrimitives.ReadInt64BigEndian(bytes[8..]);
+            upper = BinaryPrimitives.ReadInt64BigEndian(bytes[..sizeof(long)]);
+            lower = BinaryPrimitives.ReadInt64BigEndian(bytes[sizeof(long)..]);
         }
         public IPv6Address(IPAddress address) {
             if (address.AddressFamily != AddressFamily.InterNetworkV6) {
@@ -77,7 +78,7 @@ namespace StrictIPParser {
         }
 
         public static bool TryParseInto(ReadOnlySpan<char> text, Span<byte> span) {
-            if (text.Length > 39 || span.Length != ByteCount) {
+            if (text.Length < MinAddressChars || text.Length > MaxAddressChars || span.Length < ByteCount) {
                 return false;
             }
 
@@ -187,6 +188,10 @@ namespace StrictIPParser {
             return HashCode.Combine(upper, lower);
         }
 
+        public bool TryFormat(Span<char> destination, out int charsWritten) {
+            return ((IPAddress)this).TryFormat(destination, out charsWritten);
+        }
+
         public override string ToString() {
             return ((IPAddress)this).ToString();
         }
@@ -196,6 +201,14 @@ namespace StrictIPParser {
         }
 
         public static bool operator !=(IPv6Address left, IPv6Address right) {
+            return !(left == right);
+        }
+
+        public static bool operator ==(IPv6Address left, IPAddress right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(IPv6Address left, IPAddress right) {
             return !(left == right);
         }
 

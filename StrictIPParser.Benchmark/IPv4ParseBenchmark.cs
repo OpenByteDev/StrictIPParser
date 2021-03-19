@@ -7,7 +7,7 @@ namespace StrictIPParser.Benchmark {
 
         [GlobalSetup]
         public void Setup() {
-            Random random = new Random();
+            Random random = new();
             for (int i = 0; i < Addresses.Length; i++) {
                 Addresses[i] = new IPv4Address(random.Next()).ToString();
             }
