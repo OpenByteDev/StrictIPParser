@@ -33,7 +33,7 @@ namespace StrictIPParser {
         }
 
         public static bool TryParse(ReadOnlySpan<char> text, out IPv6EndPoint endPoint) {
-            if (text.Length > MaxChars || text.Length == 0) {
+            if (text.Length < MinChars || text.Length > MaxChars) {
                 endPoint = default;
                 return false;
             }
