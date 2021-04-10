@@ -135,6 +135,10 @@ namespace StrictIPParser {
                     return false;
                 }
 
+                if (block.Length > MaxBlockChars) {
+                    return false;
+                }
+
                 foreach (char c in block) {
                     value *= 16;
 

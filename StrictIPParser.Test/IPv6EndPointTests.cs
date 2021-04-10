@@ -17,6 +17,7 @@ namespace StrictIPParser.Test {
             ParseShouldSucceed("[::0]:0");
             ParseShouldSucceed("[0:0:0::1]:65535");
             ParseShouldSucceed("[::1:2:3:4:5]:42");
+            ParseShouldSucceed("[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535");
 
             static void ParseShouldSucceed(string text) {
                 Assert.IsTrue(IPv6EndPoint.TryParse(text, out IPv6EndPoint actual));
