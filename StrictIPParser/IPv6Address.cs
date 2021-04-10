@@ -11,8 +11,10 @@ namespace StrictIPParser {
         private readonly long lower;
 
         public const int ByteCount = sizeof(long) * 2;
+        public const int MaxBlockChars = 4;
+        public const int BlockCount = 8;
         public const int MinAddressChars = 2;
-        public const int MaxAddressChars = 8 * 4 + 7;
+        public const int MaxAddressChars = (BlockCount * MaxBlockChars) + (BlockCount-1);
 
         public static readonly IPv6Address None = new(IPAddress.IPv6None);
         public static readonly IPv6Address Any = new(IPAddress.IPv6Any);

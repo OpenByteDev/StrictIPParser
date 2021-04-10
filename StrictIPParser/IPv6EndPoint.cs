@@ -7,8 +7,9 @@ namespace StrictIPParser {
         private readonly IPv6Address Address { get; }
         private readonly Port Port { get; }
 
-        public const int ByteCount = IPv6Address.ByteCount + Port.ByteCount;
         public const int MaxChars = IPv6Address.MaxAddressChars + Port.MaxChars;
+        public const int ByteCount = IPv4Address.ByteCount + Port.ByteCount;
+        public const int MinChars = 1 + IPv6Address.MinAddressChars + 2 + Port.MinChars;
 
         public IPv6EndPoint(IPv6Address address, Port port) {
             Address = address;

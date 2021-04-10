@@ -8,8 +8,10 @@ namespace StrictIPParser {
         public readonly uint Value { get; }
 
         public const int ByteCount = sizeof(uint);
-        public const int MinAddressChars = 4 * 1 + 3;
-        public const int MaxAddressChars = 4 * 3 + 3;
+        public const int MaxBlockChars = 3;
+        public const int BlockCount = 4;
+        public const int MinAddressChars = 1 * BlockCount + (BlockCount - 1);
+        public const int MaxAddressChars = MaxBlockChars * BlockCount + (BlockCount - 1);
 
         public static readonly IPv4Address None = new(IPAddress.None);
         public static readonly IPv4Address Any = new(IPAddress.Any);
@@ -81,10 +83,10 @@ namespace StrictIPParser {
             ReadOnlySpan<char> dot = ".".AsSpan();
             int nextDotIndex = -1;
 
-            for (int blockIndex = 0; blockIndex < 4; blockIndex++) {
+            for (int blockIndex = 0; blockIndex < BlockCount; blockIndex++) {
                 text = text[(nextDotIndex + 1)..];
 
-                if (blockIndex != 3) {
+                if (blockIndex != BlockCount - 1) {
                     nextDotIndex = text.IndexOf(dot);
 
                     if (nextDotIndex == -1) {
